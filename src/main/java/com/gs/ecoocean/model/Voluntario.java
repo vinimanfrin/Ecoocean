@@ -1,5 +1,7 @@
 package com.gs.ecoocean.model;
 
+import com.gs.ecoocean.dto.voluntario.VoluntarioCreateDTO;
+import com.gs.ecoocean.dto.voluntario.VoluntarioUpdateDTO;
 import com.gs.ecoocean.model.enuns.Sexo;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -30,6 +32,13 @@ public class Voluntario {
         this.dataNascimento = dataNascimento;
         this.email = email;
         this.sexo = sexo == null ? null : sexo.getCodigo();
+    }
+
+    public Voluntario(VoluntarioCreateDTO voluntarioDTO) {
+        this.nome = voluntarioDTO.nome();
+        this.dataNascimento = voluntarioDTO.dataNascimento();
+        this.email = voluntarioDTO.email();
+        this.sexo = Sexo.toEnum(voluntarioDTO.sexo()).getCodigo();
     }
 
     public Long getId() {
@@ -78,5 +87,9 @@ public class Voluntario {
 
     public void setParticipacoes(List<Participacao> participacoes) {
         this.participacoes = participacoes;
+    }
+
+    public void update(VoluntarioUpdateDTO voluntarioUpdateDTO) {
+        this.email = voluntarioUpdateDTO.email();
     }
 }

@@ -35,7 +35,7 @@ public class AreaController {
     }
 
     @PostMapping
-    public ResponseEntity<AreaResponseDTO> create(@RequestBody @Valid AreaCreateDTO areaDTO){
+    public ResponseEntity<Void> create(@RequestBody @Valid AreaCreateDTO areaDTO){
         Area areaSaved = service.create(areaDTO);
         URI uriLocation = Uri.createUriLocation(areaSaved.getId());
         return ResponseEntity.created(uriLocation).build();
