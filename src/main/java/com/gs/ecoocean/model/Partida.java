@@ -1,5 +1,7 @@
 package com.gs.ecoocean.model;
 
+import com.gs.ecoocean.dto.partida.PartidaCreateDTO;
+import com.gs.ecoocean.dto.partida.PartidaUpdateDTO;
 import com.gs.ecoocean.model.enuns.StatusPartida;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
@@ -28,7 +30,7 @@ public class Partida {
     @JoinColumn(name = "voluntario_admin_id")
     private VoluntarioAdmin voluntarioAdmin;
 
-    @OneToMany(mappedBy = "partida")
+    @OneToMany(mappedBy = "partida", cascade = CascadeType.ALL)
     private List<Participacao> participacoes;
 
     public Partida(Long id, String nome, String descricao, LocalDateTime dataInicio, LocalDateTime dataFim, StatusPartida status, Area area, VoluntarioAdmin voluntarioAdmin){
@@ -38,6 +40,14 @@ public class Partida {
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
         this.status = status == null ? null : status.getCodigo();
+        this.area = area;
+        this.voluntarioAdmin = voluntarioAdmin;
+    }
+
+    public Partida(PartidaCreateDTO partidaDTO, Area area, VoluntarioAdmin voluntarioAdmin) {
+        this.nome = partidaDTO.nome();
+        this.descricao = partidaDTO.descricao();
+        this.status = StatusPartida.AGENDADA.getCodigo();
         this.area = area;
         this.voluntarioAdmin = voluntarioAdmin;
     }
@@ -111,6 +121,11 @@ public class Partida {
     }
 
     public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public void update(PartidaUpdateDTO partidaUpdateDTO) {
+        this.nome = nome;
         this.descricao = descricao;
     }
 }
