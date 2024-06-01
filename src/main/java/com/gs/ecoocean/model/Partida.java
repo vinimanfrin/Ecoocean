@@ -2,9 +2,7 @@ package com.gs.ecoocean.model;
 
 import com.gs.ecoocean.model.enuns.StatusPartida;
 import jakarta.persistence.*;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,6 +14,8 @@ public class Partida {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String nome;
+    private String descricao;
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
     private Integer status;
@@ -31,12 +31,15 @@ public class Partida {
     @OneToMany(mappedBy = "partida")
     private List<Participacao> participacoes;
 
-    public Partida(Long id, LocalDateTime dataInicio, LocalDateTime dataFim, StatusPartida status, Area area, VoluntarioAdmin voluntarioAdmin){
+    public Partida(Long id, String nome, String descricao, LocalDateTime dataInicio, LocalDateTime dataFim, StatusPartida status, Area area, VoluntarioAdmin voluntarioAdmin){
         this.id = id;
+        this.nome = nome;
+        this.descricao = descricao;
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
         this.status = status == null ? null : status.getCodigo();
         this.area = area;
+        this.voluntarioAdmin = voluntarioAdmin;
     }
 
     public Long getId() {
@@ -93,5 +96,21 @@ public class Partida {
 
     public void setParticipacoes(List<Participacao> participacoes) {
         this.participacoes = participacoes;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
     }
 }
