@@ -1,5 +1,7 @@
 package com.gs.ecoocean.model;
 
+import com.gs.ecoocean.dto.voladmin.VoluntarioAdminCreateDTO;
+import com.gs.ecoocean.dto.voladmin.VoluntarioAdminUpdateDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,4 +21,14 @@ public class VoluntarioAdmin {
 
     @OneToMany(mappedBy = "voluntarioAdmin")
     private List<Partida> partidas;
+
+    public VoluntarioAdmin(VoluntarioAdminCreateDTO voluntarioAdminDTO) {
+        this.nome = voluntarioAdminDTO.nome();
+        this.email = voluntarioAdminDTO.email();
+    }
+
+    public void update(VoluntarioAdminUpdateDTO voluntarioAdminUpdateDTO) {
+        this.nome = voluntarioAdminUpdateDTO.nome();
+        this.email = voluntarioAdminUpdateDTO.email();
+    }
 }
