@@ -67,4 +67,19 @@ public class PartidaService {
         partida.update(partidaUpdateDTO);
         return repository.save(partida);
     }
+
+    @Transactional
+    public void encerrarOuAtivar(Long id){
+        Partida partida = repository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+                "não foi possível encerrar/ativar a partida, partida não encontrada para o id:"+id));
+
+        if (partida.getStatus().equals(StatusPartida.ATIVA))
+            partida.setStatus(StatusPartida.ENCERRADA);
+        else if (partida.getStatus().equals(StatusPartida.AGENDADA))
+            partida.setStatus(StatusPartida.ATIVA);
+        else
+            throw new DataIntegrityViolationException("não é possível ativar/encerrar partidas encerradas ou canceladas");
+        
+        repository.save(partida);
+    }
 }

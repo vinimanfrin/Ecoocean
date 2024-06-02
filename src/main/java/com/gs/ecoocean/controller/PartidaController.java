@@ -57,4 +57,10 @@ public class PartidaController {
         service.cancelar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/encerrar-ativar/{id}")
+    public ResponseEntity<Void> encerrarOuIniciar(@PathVariable Long id){
+        service.encerrarOuAtivar(id);
+        return ResponseEntity.noContent().build();
+    }
 }
