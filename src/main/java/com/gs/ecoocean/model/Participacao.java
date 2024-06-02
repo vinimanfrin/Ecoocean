@@ -1,5 +1,6 @@
 package com.gs.ecoocean.model;
 
+import com.gs.ecoocean.dto.participacao.ParticipacaoCreateDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,4 +29,10 @@ public class Participacao {
     private List<Coleta> coletas;
 
     private Integer pontuacao;
+
+    public Participacao(Voluntario voluntario, Partida partida) {
+        this.voluntario = voluntario;
+        this.partida = partida;
+        this.pontuacao = 0;
+    }
 }
