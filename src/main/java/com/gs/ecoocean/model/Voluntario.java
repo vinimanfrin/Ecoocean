@@ -28,19 +28,21 @@ public class Voluntario {
     @JoinColumn(name = "auth_id")
     private Auth auth;
 
-    public Voluntario(Long id, String nome, LocalDate dataNascimento, String email, Sexo sexo){
+    public Voluntario(Long id, String nome, LocalDate dataNascimento, String email, Sexo sexo, Auth auth){
         this.id = id;
         this.nome = nome;
         this.dataNascimento = dataNascimento;
         this.email = email;
         this.sexo = sexo == null ? null : sexo.getCodigo();
+        this.auth = auth;
     }
 
-    public Voluntario(VoluntarioCreateDTO voluntarioDTO) {
+    public Voluntario(VoluntarioCreateDTO voluntarioDTO, Auth auth) {
         this.nome = voluntarioDTO.nome();
         this.dataNascimento = voluntarioDTO.dataNascimento();
         this.email = voluntarioDTO.email();
         this.sexo = Sexo.toEnum(voluntarioDTO.sexo()).getCodigo();
+        this.auth = auth;
     }
 
     public Long getId() {

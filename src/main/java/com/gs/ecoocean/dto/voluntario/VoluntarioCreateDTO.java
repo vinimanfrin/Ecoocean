@@ -12,6 +12,8 @@ public record VoluntarioCreateDTO(
         @NotBlank String nome,
         @Past @NotNull @JsonFormat(pattern = "dd-MM-yyyy") LocalDate dataNascimento,
         @NotBlank @Email String email,
-        @NotNull Integer sexo
+        @NotNull Integer sexo,
+        @NotBlank String username,
+        @NotBlank String password
         ) {
 }

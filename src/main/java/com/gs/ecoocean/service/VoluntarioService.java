@@ -2,12 +2,16 @@ package com.gs.ecoocean.service;
 
 import com.gs.ecoocean.dto.voluntario.VoluntarioCreateDTO;
 import com.gs.ecoocean.dto.voluntario.VoluntarioUpdateDTO;
+import com.gs.ecoocean.model.Auth;
 import com.gs.ecoocean.model.Voluntario;
+import com.gs.ecoocean.model.enuns.PerfilUsuario;
 import com.gs.ecoocean.repository.VoluntarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +19,12 @@ public class VoluntarioService {
 
     @Autowired
     private VoluntarioRepository repository;
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Page<Voluntario> index(Pageable pageable) {
         return repository.findAll(pageable);
@@ -25,7 +35,14 @@ public class VoluntarioService {
     }
 
     public Voluntario create(VoluntarioCreateDTO voluntarioDTO){
-        return repository.save(new Voluntario(voluntarioDTO));
+        if (authService.existsByUsername(voluntarioDTO.username())){
+            throw new DataIntegrityViolationException("o username informado está em uso");
+        }
+        String passwordEncoded = passwordEncoder.encode(voluntarioDTO.password());
+        Auth auth = new Auth(voluntarioDTO.username(),passwordEncoded,PerfilUsuario.VOLUNTARIO);
+        authService.create(auth);
+
+        return repository.save(new Voluntario(voluntarioDTO, auth));
     }
 
     public void deleteById(Long id){
