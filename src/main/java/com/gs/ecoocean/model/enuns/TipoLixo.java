@@ -1,18 +1,20 @@
 package com.gs.ecoocean.model.enuns;
 
 public enum TipoLixo {
-    VIDRO(1,"Lixo do tipo vidros"),
-    PAPEL(2,"Lixo do tipo papel"),
-    PLASTICO(3,"Lixo do tipo plastico"),
-    METAL(4,"Lixo do tipo metal"),
-    ORGANICO(5,"Lixo do tipo orgânico");
+    VIDRO(1,"Lixo do tipo vidros",5),
+    PAPEL(2,"Lixo do tipo papel",1),
+    PLASTICO(3,"Lixo do tipo plastico",2),
+    METAL(4,"Lixo do tipo metal",3),
+    ORGANICO(5,"Lixo do tipo orgânico",4);
 
     private int codigo;
     private String descricao;
+    private Integer valor;
 
-    TipoLixo(int codigio,String descricao){
+    TipoLixo(int codigio,String descricao,Integer valor){
         this.codigo = codigio;
         this.descricao = descricao;
+        this.valor = valor;
     }
 
     public int getCodigo() {
@@ -29,6 +31,14 @@ public enum TipoLixo {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public Integer getValor(){
+        return valor;
+    }
+
+    public void setValor(Integer valor){
+        this.valor = valor;
     }
 
     public static TipoLixo toEnum(Integer codigo){
