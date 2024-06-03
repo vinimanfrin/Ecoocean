@@ -26,9 +26,10 @@ public class VoluntarioAdmin {
     @JoinColumn(name = "auth_id")
     private Auth auth;
 
-    public VoluntarioAdmin(VoluntarioAdminCreateDTO voluntarioAdminDTO) {
+    public VoluntarioAdmin(VoluntarioAdminCreateDTO voluntarioAdminDTO, Auth auth) {
         this.nome = voluntarioAdminDTO.nome();
         this.email = voluntarioAdminDTO.email();
+        this.auth = auth;
     }
 
     public void update(VoluntarioAdminUpdateDTO voluntarioAdminUpdateDTO) {

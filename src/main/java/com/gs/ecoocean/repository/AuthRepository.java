@@ -7,4 +7,6 @@ import com.gs.ecoocean.model.Auth;
 
 @Repository
 public interface AuthRepository extends JpaRepository<Auth,Long>{
+
+    boolean existsByUsername(String username);
 }

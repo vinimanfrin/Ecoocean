@@ -2,19 +2,30 @@ package com.gs.ecoocean.service;
 
 import com.gs.ecoocean.dto.voladmin.VoluntarioAdminCreateDTO;
 import com.gs.ecoocean.dto.voladmin.VoluntarioAdminUpdateDTO;
+import com.gs.ecoocean.model.Auth;
 import com.gs.ecoocean.model.VoluntarioAdmin;
+import com.gs.ecoocean.model.enuns.PerfilUsuario;
 import com.gs.ecoocean.repository.VoluntarioAdminRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VoluntarioAdminService {
 
     @Autowired
     private VoluntarioAdminRepository repository;
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Page<VoluntarioAdmin> index(Pageable pageable) {
         return repository.findAll(pageable);
@@ -24,8 +35,16 @@ public class VoluntarioAdminService {
         return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Voluntário administrador não encontrado para o id:"+id));
     }
 
+    @Transactional
     public VoluntarioAdmin create(VoluntarioAdminCreateDTO voluntarioAdminDTO){
-        return repository.save(new VoluntarioAdmin(voluntarioAdminDTO));
+        if (authService.existsByUsername(voluntarioAdminDTO.username())) {
+            throw new DataIntegrityViolationException("o username informado está em uso");
+        }
+        String passwordEncoded = passwordEncoder.encode(voluntarioAdminDTO.password());
+        Auth auth = new Auth(voluntarioAdminDTO.username(),passwordEncoded,PerfilUsuario.ADMIN);
+        authService.create(auth);
+
+        return repository.save(new VoluntarioAdmin(voluntarioAdminDTO, auth));
     }
 
     public void deleteById(Long id){

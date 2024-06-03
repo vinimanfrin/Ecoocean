@@ -21,6 +21,12 @@ public class Auth {
     private String password;
     private Integer role;
 
+	public Auth(String username,String password,PerfilUsuario role){
+		this.username = username;
+		this.password = password;
+		this.role = role.getCodigo();
+	}
+
     public Long getId() {
 		return id;
 	}
