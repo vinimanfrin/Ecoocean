@@ -4,8 +4,12 @@ import com.gs.ecoocean.dto.coleta.ColetaCreateDTO;
 import com.gs.ecoocean.model.Coleta;
 import com.gs.ecoocean.model.Participacao;
 import com.gs.ecoocean.model.enuns.StatusPartida;
+import com.gs.ecoocean.model.enuns.TipoLixo;
 import com.gs.ecoocean.repository.ColetaRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+
+import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -29,12 +33,17 @@ public class ColetaService {
         return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("coleta não encontrada para o id:"+id));
     }
 
+    @Transactional
     public Coleta create(ColetaCreateDTO coletaCreateDTO){
         Participacao participacao = participacaoService.get(coletaCreateDTO.idParticipacao());
+
         if (!participacao.getPartida().getStatus().equals(StatusPartida.ATIVA))
             throw new DataIntegrityViolationException("a inserção de uma nova coleta é permitida apenas em partidas em andamento");
+        
+        BigDecimal valorTipoLixo = new BigDecimal(TipoLixo.toEnum(coletaCreateDTO.tipoLixo()).getValor());
+        BigDecimal pontuacao = valorTipoLixo.multiply(coletaCreateDTO.quantidade());
 
-        return repository.save(new Coleta(coletaCreateDTO,participacao));
+        return repository.save(new Coleta(coletaCreateDTO,participacao,pontuacao));
     }
 
     public void deleteById(Long id){
