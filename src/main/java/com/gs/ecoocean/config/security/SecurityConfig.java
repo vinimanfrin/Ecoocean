@@ -1,6 +1,7 @@
 package com.gs.ecoocean.config.security;
 
 import com.gs.ecoocean.filters.AuthenticationFilter;
+import com.gs.ecoocean.filters.AuthorizationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,7 +25,7 @@ public class SecurityConfig {
     };
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, AuthenticationFilter authenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, AuthenticationFilter authenticationFilter, AuthorizationFilter authorizationFilter) throws Exception {
         return httpSecurity.
                 csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -32,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, PUBLIC_MATCHERS_GET).permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilter(authorizationFilter)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
