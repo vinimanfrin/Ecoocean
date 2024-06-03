@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 
@@ -35,6 +36,7 @@ public class AreaController {
     }
 
     @PostMapping
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<Void> create(@RequestBody @Valid AreaCreateDTO areaDTO){
         Area areaSaved = service.create(areaDTO);
         URI uriLocation = Uri.createUriLocation(areaSaved.getId());
@@ -42,12 +44,14 @@ public class AreaController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<AreaResponseDTO> update(@PathVariable Long id, @RequestBody @Valid AreaUpdateDTO areaUpdateDTO){
         Area areaUpdated = service.update(areaUpdateDTO,id);
         return ResponseEntity.ok(new AreaResponseDTO(areaUpdated));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<Void> deleteById(@PathVariable Long id){
         service.deleteById(id);
         return ResponseEntity.noContent().build();
