@@ -22,6 +22,10 @@ public class VoluntarioAdmin {
     @OneToMany(mappedBy = "voluntarioAdmin")
     private List<Partida> partidas;
 
+    @OneToOne
+    @JoinColumn(name = "auth_id")
+    private Auth auth;
+
     public VoluntarioAdmin(VoluntarioAdminCreateDTO voluntarioAdminDTO) {
         this.nome = voluntarioAdminDTO.nome();
         this.email = voluntarioAdminDTO.email();

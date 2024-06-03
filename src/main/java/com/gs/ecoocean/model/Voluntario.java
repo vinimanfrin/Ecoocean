@@ -4,9 +4,7 @@ import com.gs.ecoocean.dto.voluntario.VoluntarioCreateDTO;
 import com.gs.ecoocean.dto.voluntario.VoluntarioUpdateDTO;
 import com.gs.ecoocean.model.enuns.Sexo;
 import jakarta.persistence.*;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,6 +23,10 @@ public class Voluntario {
 
     @OneToMany(mappedBy = "voluntario")
     private List<Participacao> participacoes;
+
+    @OneToOne
+    @JoinColumn(name = "auth_id")
+    private Auth auth;
 
     public Voluntario(Long id, String nome, LocalDate dataNascimento, String email, Sexo sexo){
         this.id = id;
@@ -87,6 +89,14 @@ public class Voluntario {
 
     public void setParticipacoes(List<Participacao> participacoes) {
         this.participacoes = participacoes;
+    }
+
+    public Auth getAuth() {
+        return auth; 
+    }
+
+    public void setAuth(Auth auth) { 
+        this.auth = auth;
     }
 
     public void update(VoluntarioUpdateDTO voluntarioUpdateDTO) {
