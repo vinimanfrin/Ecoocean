@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -28,11 +29,11 @@ public class Participacao {
     @OneToMany(mappedBy = "participacao")
     private List<Coleta> coletas;
 
-    private Integer pontuacao;
+    private BigDecimal pontuacao;
 
     public Participacao(Voluntario voluntario, Partida partida) {
         this.voluntario = voluntario;
         this.partida = partida;
-        this.pontuacao = 0;
+        this.pontuacao = new BigDecimal(0);
     }
 }
