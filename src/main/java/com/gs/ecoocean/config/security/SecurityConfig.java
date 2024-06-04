@@ -29,6 +29,11 @@ public class SecurityConfig {
         "/partidas/**",
     };
 
+
+    private static final String[] PUBLIC_MATCHERS_POST = {
+            "/voluntarios"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, AuthenticationFilter authenticationFilter, AuthorizationFilter authorizationFilter) throws Exception {
         return httpSecurity
@@ -37,6 +42,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, PUBLIC_MATCHERS_GET).permitAll()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_MATCHERS_POST).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilter(authorizationFilter)
