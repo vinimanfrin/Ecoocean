@@ -3,6 +3,7 @@ package com.gs.ecoocean.service;
 import com.gs.ecoocean.dto.voluntario.VoluntarioCreateDTO;
 import com.gs.ecoocean.dto.voluntario.VoluntarioUpdateDTO;
 import com.gs.ecoocean.model.Auth;
+import com.gs.ecoocean.model.User;
 import com.gs.ecoocean.model.Voluntario;
 import com.gs.ecoocean.model.enuns.PerfilUsuario;
 import com.gs.ecoocean.repository.VoluntarioRepository;
@@ -55,6 +56,10 @@ public class VoluntarioService {
     public Voluntario update(VoluntarioUpdateDTO voluntarioUpdateDTO, Long id){
         Voluntario voluntario = repository.findById(id).orElseThrow(() -> new EntityNotFoundException(
                 "não foi possível atualizar os dados do voluntário, voluntário não encontrado para o id:"+id));
+
+        User authenticatedUser = UserService.authenticated();
+        if (!authenticatedUser.hasRole(PerfilUsuario.ADMIN) && !voluntario.getAuth().getId().equals(authenticatedUser.getId()))
+            throw new IllegalArgumentException("Voluntários alteram apenas os próprios dados");
 
         voluntario.update(voluntarioUpdateDTO);
         return repository.save(voluntario);
