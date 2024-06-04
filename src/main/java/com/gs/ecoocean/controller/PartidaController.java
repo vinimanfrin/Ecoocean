@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -40,6 +41,7 @@ public class PartidaController {
     }
 
     @PostMapping
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<Void> create(@RequestBody @Valid PartidaCreateDTO partidaDTO){
         Partida partidaSaved = service.create(partidaDTO);
         URI uriLocation = Uri.createUriLocation(partidaSaved.getId());
@@ -47,18 +49,21 @@ public class PartidaController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<PartidaResponseDTO> update(@PathVariable Long id, @RequestBody @Valid PartidaUpdateDTO partidaUpdateDTO){
         Partida partidaUpdated = service.update(partidaUpdateDTO,id);
         return ResponseEntity.ok(new PartidaResponseDTO(partidaUpdated));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<Void> cancelar(@PathVariable Long id){
         service.cancelar(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/encerrar-ativar/{id}")
+    @PreAuthorize(value = "hasRole('ADMIN')")
     public ResponseEntity<Void> encerrarOuIniciar(@PathVariable Long id){
         service.encerrarOuAtivar(id);
         return ResponseEntity.noContent().build();
