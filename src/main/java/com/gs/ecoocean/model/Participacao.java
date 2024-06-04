@@ -1,6 +1,5 @@
 package com.gs.ecoocean.model;
 
-import com.gs.ecoocean.dto.participacao.ParticipacaoCreateDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,5 +34,45 @@ public class Participacao {
         this.voluntario = voluntario;
         this.partida = partida;
         this.pontuacao = new BigDecimal(0);
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Voluntario getVoluntario() {
+        return voluntario;
+    }
+
+    public void setVoluntario(Voluntario voluntario) {
+        this.voluntario = voluntario;
+    }
+
+    public Partida getPartida() {
+        return partida;
+    }
+
+    public void setPartida(Partida partida) {
+        this.partida = partida;
+    }
+
+    public List<Coleta> getColetas() {
+        return coletas;
+    }
+
+    public void setColetas(List<Coleta> coletas) {
+        this.coletas = coletas;
+    }
+
+    public BigDecimal getPontuacao() {
+        return pontuacao;
+    }
+
+    public void setPontuacao(BigDecimal pontuacao) {
+        this.pontuacao = pontuacao;
     }
 }
