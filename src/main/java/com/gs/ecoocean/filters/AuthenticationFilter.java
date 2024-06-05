@@ -16,6 +16,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -48,5 +50,15 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         String username = ((User) authResult.getPrincipal()).getUsername();
         String token = jwtService.generateToken(username);
         response.addHeader("Authorization","Bearer" + token);
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        // Usando ObjectMapper para criar o JSON
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("token", "Bearer" +token);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(response.getWriter(), responseBody);
     }
 }
