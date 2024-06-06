@@ -3,6 +3,7 @@ package com.gs.ecoocean.filters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.ecoocean.dto.auth.LoginDTO;
 import com.gs.ecoocean.model.User;
+import com.gs.ecoocean.model.enuns.PerfilUsuario;
 import com.gs.ecoocean.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -54,9 +55,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        // Usando ObjectMapper para criar o JSON
+
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("token", "Bearer" +token);
+        responseBody.put("role", String.valueOf(((User) authResult.getPrincipal()).hasRole(PerfilUsuario.ADMIN) ?
+                PerfilUsuario.ADMIN : PerfilUsuario.VOLUNTARIO));
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writeValue(response.getWriter(), responseBody);
