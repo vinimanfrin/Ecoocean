@@ -2,6 +2,7 @@ package com.gs.ecoocean.service;
 
 import com.gs.ecoocean.dto.area.AreaCreateDTO;
 import com.gs.ecoocean.dto.area.AreaUpdateDTO;
+import com.gs.ecoocean.exceptions.ObjectNotFoundException;
 import com.gs.ecoocean.model.Area;
 import com.gs.ecoocean.repository.AreaRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,7 +22,7 @@ public class AreaService {
     }
 
     public Area get(Long id){
-        return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("área não encontrada para o id:"+id));
+        return repository.findById(id).orElseThrow(() -> new ObjectNotFoundException("área não encontrada para o id:"+id));
     }
 
     public Area create(AreaCreateDTO areaDTO){
@@ -29,14 +30,14 @@ public class AreaService {
     }
 
     public void deleteById(Long id){
-        Area area = repository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+        Area area = repository.findById(id).orElseThrow(() -> new ObjectNotFoundException(
                 "não foi possível deletar a área, área não encontrada para o id:"+id));
 
         repository.deleteById(id);
     }
 
     public Area update(AreaUpdateDTO areaUpdateDTO, Long id){
-        Area area = repository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+        Area area = repository.findById(id).orElseThrow(() -> new ObjectNotFoundException(
                 "não foi possível atualizar os dados da área, área não encontrada para o id:"+id));
 
         area.update(areaUpdateDTO);

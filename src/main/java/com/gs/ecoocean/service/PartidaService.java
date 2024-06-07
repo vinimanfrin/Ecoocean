@@ -2,6 +2,8 @@ package com.gs.ecoocean.service;
 
 import com.gs.ecoocean.dto.partida.PartidaCreateDTO;
 import com.gs.ecoocean.dto.partida.PartidaUpdateDTO;
+import com.gs.ecoocean.exceptions.DataIntegrityException;
+import com.gs.ecoocean.exceptions.ObjectNotFoundException;
 import com.gs.ecoocean.model.Area;
 import com.gs.ecoocean.model.Partida;
 import com.gs.ecoocean.model.VoluntarioAdmin;
@@ -34,7 +36,7 @@ public class PartidaService {
 
     @Transactional(readOnly = true)
     public Partida get(Long id){
-        return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Partida não encontrada para o id:"+id));
+        return repository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Partida não encontrada para o id:"+id));
     }
 
     @Transactional
@@ -46,10 +48,10 @@ public class PartidaService {
 
     @Transactional
     public void cancelar(Long id){
-        Partida partida = repository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+        Partida partida = repository.findById(id).orElseThrow(() -> new ObjectNotFoundException(
                 "não foi possível cancelar a partida, partida não encontrada para o id:"+id));
 
-        if (!partida.getStatus().equals(StatusPartida.AGENDADA)) throw new DataIntegrityViolationException(
+        if (!partida.getStatus().equals(StatusPartida.AGENDADA)) throw new ObjectNotFoundException(
                 "O cancelamento de partidas é possível apenas em partidas que estão agendadas");
 
         partida.setStatus(StatusPartida.CANCELADA);
@@ -58,11 +60,11 @@ public class PartidaService {
 
     @Transactional
     public Partida update(PartidaUpdateDTO partidaUpdateDTO, Long id){
-        Partida partida = repository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+        Partida partida = repository.findById(id).orElseThrow(() -> new ObjectNotFoundException(
                 "não foi possível atualizar os dados da partida, partida não encontrada para o id:"+id));
 
         if (partida.getStatus().equals(StatusPartida.CANCELADA) || partida.getStatus().equals(StatusPartida.ENCERRADA))
-            throw new DataIntegrityViolationException("Não é possível alterar dados de partidas canceladas ou encerradas");
+            throw new DataIntegrityException("Não é possível alterar dados de partidas canceladas ou encerradas");
 
         partida.update(partidaUpdateDTO);
         return repository.save(partida);
@@ -70,7 +72,7 @@ public class PartidaService {
 
     @Transactional
     public void encerrarOuAtivar(Long id){
-        Partida partida = repository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+        Partida partida = repository.findById(id).orElseThrow(() -> new ObjectNotFoundException(
                 "não foi possível encerrar/ativar a partida, partida não encontrada para o id:"+id));
 
         if (partida.getStatus().equals(StatusPartida.ATIVA))
@@ -78,7 +80,7 @@ public class PartidaService {
         else if (partida.getStatus().equals(StatusPartida.AGENDADA))
             partida.setStatus(StatusPartida.ATIVA);
         else
-            throw new DataIntegrityViolationException("não é possível ativar/encerrar partidas encerradas ou canceladas");
+            throw new DataIntegrityException("não é possível ativar/encerrar partidas encerradas ou canceladas");
         
         repository.save(partida);
     }

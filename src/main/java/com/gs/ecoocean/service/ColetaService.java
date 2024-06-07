@@ -1,6 +1,8 @@
 package com.gs.ecoocean.service;
 
 import com.gs.ecoocean.dto.coleta.ColetaCreateDTO;
+import com.gs.ecoocean.exceptions.DataIntegrityException;
+import com.gs.ecoocean.exceptions.ObjectNotFoundException;
 import com.gs.ecoocean.model.Coleta;
 import com.gs.ecoocean.model.Participacao;
 import com.gs.ecoocean.model.enuns.StatusPartida;
@@ -30,7 +32,7 @@ public class ColetaService {
     }
 
     public Coleta get(Long id){
-        return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("coleta não encontrada para o id:"+id));
+        return repository.findById(id).orElseThrow(() -> new ObjectNotFoundException("coleta não encontrada para o id:"+id));
     }
 
     @Transactional
@@ -38,7 +40,7 @@ public class ColetaService {
         Participacao participacao = participacaoService.get(coletaCreateDTO.idParticipacao());
 
         if (!participacao.getPartida().getStatus().equals(StatusPartida.ATIVA))
-            throw new DataIntegrityViolationException("a inserção de uma nova coleta é permitida apenas em partidas em andamento");
+            throw new DataIntegrityException("a inserção de uma nova coleta é permitida apenas em partidas em andamento");
         
         BigDecimal valorTipoLixo = new BigDecimal(TipoLixo.toEnum(coletaCreateDTO.tipoLixo()).getValor());
         BigDecimal pontuacao = valorTipoLixo.multiply(coletaCreateDTO.quantidade());
@@ -47,10 +49,10 @@ public class ColetaService {
     }
 
     public void deleteById(Long id){
-         Coleta coleta = repository.findById(id).orElseThrow(() -> new EntityNotFoundException(
+         Coleta coleta = repository.findById(id).orElseThrow(() -> new ObjectNotFoundException(
                 "não foi possível deletar a coleta, coleta não encontrada para o id:"+id));
          if (!coleta.getParticipacao().getPartida().getStatus().equals(StatusPartida.ATIVA))
-             throw new DataIntegrityViolationException("É permitido deletar coletas apenas de partidas em andamento");
+             throw new DataIntegrityException("É permitido deletar coletas apenas de partidas em andamento");
 
         repository.deleteById(id);
     }

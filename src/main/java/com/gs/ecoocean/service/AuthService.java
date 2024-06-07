@@ -1,6 +1,7 @@
 package com.gs.ecoocean.service;
 
 import com.gs.ecoocean.dto.VoluntarioAutenticadoDTO;
+import com.gs.ecoocean.exceptions.AuthorizationException;
 import com.gs.ecoocean.model.User;
 import com.gs.ecoocean.model.Voluntario;
 import com.gs.ecoocean.model.VoluntarioAdmin;
@@ -34,7 +35,7 @@ public class AuthService {
     public VoluntarioAutenticadoDTO findByToken() {
         User authenticatedUser = UserService.authenticated();
         Auth auth = repository.findByUsername(authenticatedUser.getUsername()).orElseThrow(
-                () -> new IllegalArgumentException("Não authorizado"));
+                () -> new AuthorizationException("Não authorizado"));
         VoluntarioAutenticadoDTO voluntarioAutenticadoDTO = null;
         if (auth.getRole().equals(PerfilUsuario.VOLUNTARIO)) {
             Voluntario voluntario = voluntarioService.findByAuthId(auth.getId());
