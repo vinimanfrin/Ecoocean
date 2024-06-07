@@ -1,7 +1,6 @@
 package com.gs.ecoocean.controller;
 
-import com.gs.ecoocean.model.Auth;
-import com.gs.ecoocean.repository.AuthRepository;
+import com.gs.ecoocean.dto.VoluntarioAutenticadoDTO;
 import com.gs.ecoocean.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +16,8 @@ public class AuthController {
     private AuthService service;
 
     @GetMapping
-    public ResponseEntity<Auth> findByToken(){
-        Auth auth = service.findByToken();
-        return ResponseEntity.ok(auth);
+    public ResponseEntity<VoluntarioAutenticadoDTO> findByToken(){
+        VoluntarioAutenticadoDTO voluntarioAutenticado = service.findByToken();
+        return ResponseEntity.ok(voluntarioAutenticado);
     }
 }

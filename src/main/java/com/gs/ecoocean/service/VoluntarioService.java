@@ -9,11 +9,14 @@ import com.gs.ecoocean.model.enuns.PerfilUsuario;
 import com.gs.ecoocean.repository.VoluntarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class VoluntarioService {
@@ -22,6 +25,7 @@ public class VoluntarioService {
     private VoluntarioRepository repository;
 
     @Autowired
+    @Lazy
     private AuthService authService;
 
     @Autowired
@@ -63,5 +67,9 @@ public class VoluntarioService {
 
         voluntario.update(voluntarioUpdateDTO);
         return repository.save(voluntario);
+    }
+
+    public Voluntario findByAuthId(Long authId){
+        return repository.findByAuthId(authId).orElseThrow(() -> new EntityNotFoundException("Voluntário não encontrado com o auth de id:"+authId));
     }
 }
