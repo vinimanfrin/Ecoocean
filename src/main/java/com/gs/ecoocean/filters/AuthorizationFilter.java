@@ -32,7 +32,7 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
         String token = request.getHeader("Authorization");
 
         if (token != null){
-            String username = jwtService.validateToken(token.replace("Bearer",""));
+            String username = jwtService.validateToken(token);
             UserDetails user = userDetailsService.loadUserByUsername(username);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities());

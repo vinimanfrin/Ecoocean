@@ -50,14 +50,14 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     public void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         String username = ((User) authResult.getPrincipal()).getUsername();
         String token = jwtService.generateToken(username);
-        response.addHeader("Authorization","Bearer" + token);
+        response.addHeader("Authorization",token);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
 
         Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("token", "Bearer" +token);
+        responseBody.put("token",token);
         responseBody.put("role", String.valueOf(((User) authResult.getPrincipal()).hasRole(PerfilUsuario.ADMIN) ?
                 PerfilUsuario.ADMIN : PerfilUsuario.VOLUNTARIO));
 
