@@ -20,11 +20,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/partidas")
@@ -34,11 +40,21 @@ public class PartidaController {
     @Autowired
     private PartidaService service;
 
+    @Autowired
+    private PagedResourcesAssembler<PartidaResponseDTO> pagedResourcesAssembler;
+
     @GetMapping
     @Operation(summary = "Lista todas as partidas", description = "A listagem ocorre com paginação e tamanho padrão de 10 partidas por requisição")
-    public ResponseEntity<Page<PartidaResponseDTO>> index(@ParameterObject @PageableDefault(size = 10) Pageable pageable){
+    public ResponseEntity<PagedModel<EntityModel<PartidaResponseDTO>>> index(@ParameterObject @PageableDefault(size = 10) Pageable pageable){
         Page<PartidaResponseDTO> partidas = service.index(pageable).map(PartidaResponseDTO::new);
-        return ResponseEntity.ok(partidas);
+        PagedModel<EntityModel<PartidaResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(partidas, partidaResponseDTO -> {
+            EntityModel<PartidaResponseDTO> entityModel = EntityModel.of(partidaResponseDTO);
+            entityModel.add(linkTo(methodOn(PartidaController.class).get(partidaResponseDTO.id())).withSelfRel());
+            entityModel.add(linkTo(methodOn(PartidaController.class).cancelar(partidaResponseDTO.id())).withRel("delete"));
+            entityModel.add(linkTo(methodOn(PartidaController.class).index(pageable)).withRel("contents"));
+            return entityModel;
+        });
+        return ResponseEntity.ok(pagedModel);
     }
 
     @GetMapping("/{id}")
@@ -47,9 +63,14 @@ public class PartidaController {
             @ApiResponse(responseCode = "404", description = "Partida não encontrada"),
             @ApiResponse(responseCode = "200", description = "Partida detalhada com sucesso!")
     })
-    public ResponseEntity<PartidaResponseDTO> get(@PathVariable Long id){
+    public ResponseEntity<EntityModel<PartidaResponseDTO>> get(@PathVariable Long id){
         Partida partida = service.get(id);
-        return ResponseEntity.ok(new PartidaResponseDTO(partida));
+        PartidaResponseDTO partidaResponseDTO = new PartidaResponseDTO(partida);
+        EntityModel<PartidaResponseDTO> entityModel = EntityModel.of(partidaResponseDTO);
+        entityModel.add(linkTo(methodOn(PartidaController.class).get(id)).withSelfRel());
+        entityModel.add(linkTo(methodOn(PartidaController.class).cancelar(id)).withRel("delete"));
+        entityModel.add(linkTo(methodOn(PartidaController.class).index(Pageable.unpaged())).withRel("contents"));
+        return ResponseEntity.ok(entityModel);
     }
 
     @PostMapping
@@ -62,10 +83,14 @@ public class PartidaController {
     })
     @Operation(summary = "Cadastra uma nova partida no sistema", description = "Endpoint recebe no corpo da requisição um objeto contendo os dados" +
             " necessários para realizar o cadastro de uma nova partida")
-    public ResponseEntity<Void> create(@ParameterObject @RequestBody @Valid PartidaCreateDTO partidaDTO){
+    public ResponseEntity<EntityModel<PartidaResponseDTO>> create(@ParameterObject @RequestBody @Valid PartidaCreateDTO partidaDTO){
         Partida partidaSaved = service.create(partidaDTO);
-        URI uriLocation = Uri.createUriLocation(partidaSaved.getId());
-        return ResponseEntity.created(uriLocation).build();
+        PartidaResponseDTO partidaResponseDTO = new PartidaResponseDTO(partidaSaved);
+        EntityModel<PartidaResponseDTO> entityModel = EntityModel.of(partidaResponseDTO);
+        entityModel.add(linkTo(methodOn(PartidaController.class).get(partidaSaved.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(PartidaController.class).index(Pageable.unpaged())).withRel("contents"));
+        URI uriLocation = linkTo(methodOn(PartidaController.class).get(partidaSaved.getId())).toUri();
+        return ResponseEntity.created(uriLocation).body(entityModel);
     }
 
     @PutMapping("/{id}")
@@ -76,9 +101,13 @@ public class PartidaController {
             @ApiResponse(responseCode = "403|401", description = "Forbidden! Requer autenticação e role de admin")
     })
     @Operation(summary = "Atualiza uma partida do sistema", description = "Endpoint recebe no corpo da requisição um objeto contendo os dados necessários para atualizar dados de uma partida")
-    public ResponseEntity<PartidaResponseDTO> update(@PathVariable Long id, @ParameterObject @RequestBody @Valid PartidaUpdateDTO partidaUpdateDTO){
-        Partida partidaUpdated = service.update(partidaUpdateDTO,id);
-        return ResponseEntity.ok(new PartidaResponseDTO(partidaUpdated));
+    public ResponseEntity<EntityModel<PartidaResponseDTO>> update(@PathVariable Long id, @ParameterObject @RequestBody @Valid PartidaUpdateDTO partidaUpdateDTO){
+        Partida partidaUpdated = service.update(partidaUpdateDTO, id);
+        PartidaResponseDTO partidaResponseDTO = new PartidaResponseDTO(partidaUpdated);
+        EntityModel<PartidaResponseDTO> entityModel = EntityModel.of(partidaResponseDTO);
+        entityModel.add(linkTo(methodOn(PartidaController.class).get(id)).withSelfRel());
+        entityModel.add(linkTo(methodOn(PartidaController.class).index(Pageable.unpaged())).withRel("contents"));
+        return ResponseEntity.ok(entityModel);
     }
 
     @DeleteMapping("/{id}")

@@ -15,11 +15,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/coletas")
@@ -29,12 +35,22 @@ public class ColetaController {
     @Autowired
     private ColetaService service;
 
+    @Autowired
+    private PagedResourcesAssembler<ColetaResponseDTO> pagedResourcesAssembler;
+
     @GetMapping
     @Operation(summary = "Lista todas as coletas", description = "A listagem ocorre com paginação e tamanho padrão de 10 coletas por requisição," +
             "requer authenticação")
-    public ResponseEntity<Page<ColetaResponseDTO>> index(@ParameterObject @PageableDefault(size = 10) Pageable pageable){
+    public ResponseEntity<PagedModel<EntityModel<ColetaResponseDTO>>> index(@ParameterObject @PageableDefault(size = 10) Pageable pageable){
         Page<ColetaResponseDTO> coletas = service.index(pageable).map(ColetaResponseDTO::new);
-        return ResponseEntity.ok(coletas);
+        PagedModel<EntityModel<ColetaResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(coletas, coletaResponseDTO -> {
+            EntityModel<ColetaResponseDTO> entityModel = EntityModel.of(coletaResponseDTO);
+            entityModel.add(linkTo(methodOn(ColetaController.class).get(coletaResponseDTO.id())).withSelfRel());
+            entityModel.add(linkTo(methodOn(ColetaController.class).deleteById(coletaResponseDTO.id())).withRel("delete"));
+            entityModel.add(linkTo(methodOn(ColetaController.class).index(pageable)).withRel("contents"));
+            return entityModel;
+        });
+        return ResponseEntity.ok(pagedModel);
     }
 
     @GetMapping("/{id}")
@@ -44,9 +60,14 @@ public class ColetaController {
             @ApiResponse(responseCode = "200", description = "Coleta detalhada com sucesso!"),
             @ApiResponse(responseCode = "403|401", description = "Não autorizado, requer authenticação")
     })
-    public ResponseEntity<ColetaResponseDTO> get(@PathVariable Long id){
+    public ResponseEntity<EntityModel<ColetaResponseDTO>> get(@PathVariable Long id){
         Coleta coleta = service.get(id);
-        return ResponseEntity.ok(new ColetaResponseDTO(coleta));
+        ColetaResponseDTO coletaResponseDTO = new ColetaResponseDTO(coleta);
+        EntityModel<ColetaResponseDTO> entityModel = EntityModel.of(coletaResponseDTO);
+        entityModel.add(linkTo(methodOn(ColetaController.class).get(id)).withSelfRel());
+        entityModel.add(linkTo(methodOn(ColetaController.class).deleteById(id)).withRel("delete"));
+        entityModel.add(linkTo(methodOn(ColetaController.class).index(Pageable.unpaged())).withRel("contents"));
+        return ResponseEntity.ok(entityModel);
     }
 
     @PostMapping
@@ -58,10 +79,14 @@ public class ColetaController {
     })
     @Operation(summary = "Cadastra uma nova Coleta no sistema", description = "Endpoint recebe no corpo da requisição um objeto contendo os dados" +
             " necessários para realizar uma nova coleta")
-    public ResponseEntity<Void> create(@ParameterObject @RequestBody @Valid ColetaCreateDTO coletaCreateDTO){
+    public ResponseEntity<EntityModel<ColetaResponseDTO>> create(@ParameterObject @RequestBody @Valid ColetaCreateDTO coletaCreateDTO){
         Coleta coletaSaved = service.create(coletaCreateDTO);
-        URI uriLocation = Uri.createUriLocation(coletaSaved.getId());
-        return ResponseEntity.created(uriLocation).build();
+        ColetaResponseDTO coletaResponseDTO = new ColetaResponseDTO(coletaSaved);
+        EntityModel<ColetaResponseDTO> entityModel = EntityModel.of(coletaResponseDTO);
+        entityModel.add(linkTo(methodOn(ColetaController.class).get(coletaSaved.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(ColetaController.class).index(Pageable.unpaged())).withRel("contents"));
+        URI uriLocation = linkTo(methodOn(ColetaController.class).get(coletaSaved.getId())).toUri();
+        return ResponseEntity.created(uriLocation).body(entityModel);
     }
 
     @DeleteMapping("/{id}")

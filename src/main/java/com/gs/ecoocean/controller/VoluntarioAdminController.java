@@ -16,10 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.net.URI;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/voluntarios-admin")
@@ -30,6 +36,9 @@ public class VoluntarioAdminController {
     @Autowired
     private VoluntarioAdminService service;
 
+    @Autowired
+    private PagedResourcesAssembler<VoluntarioAdminRespondeDTO> pagedResourcesAssembler;
+
     @GetMapping
     @Operation(summary = "Lista todas os voluntários-admin", description = "A listagem ocorre com paginação e tamanho padrão de 10 voluntários-admin por requisição," +
             "endpoint requer autenticação e perfil de admin")
@@ -37,9 +46,16 @@ public class VoluntarioAdminController {
             @ApiResponse(responseCode = "200", description = "Exibindo todos os voluntarios administradores"),
             @ApiResponse(responseCode = "403|401", description = "Não autorizado! Requer autenticação e role de admin")
     })
-    public ResponseEntity<Page<VoluntarioAdminRespondeDTO>> index(@ParameterObject @PageableDefault(size = 10) Pageable pageable){
+    public ResponseEntity<PagedModel<EntityModel<VoluntarioAdminRespondeDTO>>> index(@ParameterObject @PageableDefault(size = 10) Pageable pageable){
         Page<VoluntarioAdminRespondeDTO> voluntariosAdmin = service.index(pageable).map(VoluntarioAdminRespondeDTO::new);
-        return ResponseEntity.ok(voluntariosAdmin);
+        PagedModel<EntityModel<VoluntarioAdminRespondeDTO>> pagedModel = pagedResourcesAssembler.toModel(voluntariosAdmin, voluntarioAdminRespondeDTO -> {
+            EntityModel<VoluntarioAdminRespondeDTO> entityModel = EntityModel.of(voluntarioAdminRespondeDTO);
+            entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).get(voluntarioAdminRespondeDTO.id())).withSelfRel());
+            entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).deleteById(voluntarioAdminRespondeDTO.id())).withRel("delete"));
+            entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).index(pageable)).withRel("contents"));
+            return entityModel;
+        });
+        return ResponseEntity.ok(pagedModel);
     }
 
     @GetMapping("/{id}")
@@ -49,9 +65,14 @@ public class VoluntarioAdminController {
             @ApiResponse(responseCode = "200", description = "Admin detalhado com sucesso!"),
             @ApiResponse(responseCode = "403|401", description = "Não autorizado! Requer autenticação e role de admin")
     })
-    public ResponseEntity<VoluntarioAdminRespondeDTO> get(@PathVariable Long id){
+    public ResponseEntity<EntityModel<VoluntarioAdminRespondeDTO>> get(@PathVariable Long id){
         VoluntarioAdmin voluntarioAdmin = service.get(id);
-        return ResponseEntity.ok(new VoluntarioAdminRespondeDTO(voluntarioAdmin));
+        VoluntarioAdminRespondeDTO voluntarioAdminRespondeDTO = new VoluntarioAdminRespondeDTO(voluntarioAdmin);
+        EntityModel<VoluntarioAdminRespondeDTO> entityModel = EntityModel.of(voluntarioAdminRespondeDTO);
+        entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).get(id)).withSelfRel());
+        entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).deleteById(id)).withRel("delete"));
+        entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).index(Pageable.unpaged())).withRel("contents"));
+        return ResponseEntity.ok(entityModel);
     }
 
     @PostMapping
@@ -62,10 +83,14 @@ public class VoluntarioAdminController {
     })
     @Operation(summary = "Cadastra um novo Voluntario admin no sistema", description = "Endpoint recebe no corpo da requisição um objeto contendo os dados" +
             " necessários para realizar o cadastro de um novo administrador")
-    public ResponseEntity<Void> create(@ParameterObject @RequestBody @Valid VoluntarioAdminCreateDTO voluntarioAdminDTO){
+    public ResponseEntity<EntityModel<VoluntarioAdminRespondeDTO>> create(@ParameterObject @RequestBody @Valid VoluntarioAdminCreateDTO voluntarioAdminDTO){
         VoluntarioAdmin voluntarioAdminSaved = service.create(voluntarioAdminDTO);
-        URI uriLocation = Uri.createUriLocation(voluntarioAdminSaved.getId());
-        return ResponseEntity.created(uriLocation).build();
+        VoluntarioAdminRespondeDTO voluntarioAdminRespondeDTO = new VoluntarioAdminRespondeDTO(voluntarioAdminSaved);
+        EntityModel<VoluntarioAdminRespondeDTO> entityModel = EntityModel.of(voluntarioAdminRespondeDTO);
+        entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).get(voluntarioAdminSaved.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).index(Pageable.unpaged())).withRel("contents"));
+        URI uriLocation = linkTo(methodOn(VoluntarioAdminController.class).get(voluntarioAdminSaved.getId())).toUri();
+        return ResponseEntity.created(uriLocation).body(entityModel);
     }
 
     @PutMapping("/{id}")
@@ -76,9 +101,13 @@ public class VoluntarioAdminController {
     })
     @Operation(summary = "Atualiza os dados de um Voluntario admin no sistema", description = "Endpoint recebe no corpo da requisição um objeto contendo os dados" +
             " necessários para realizar a atualização de um administrador")
-    public ResponseEntity<VoluntarioAdminRespondeDTO> update(@PathVariable Long id, @ParameterObject @RequestBody @Valid VoluntarioAdminUpdateDTO voluntarioAdminUpdateDTO){
-        VoluntarioAdmin voluntarioAdminUpdated = service.update(voluntarioAdminUpdateDTO,id);
-        return ResponseEntity.ok(new VoluntarioAdminRespondeDTO(voluntarioAdminUpdated));
+    public ResponseEntity<EntityModel<VoluntarioAdminRespondeDTO>> update(@PathVariable Long id, @ParameterObject @RequestBody @Valid VoluntarioAdminUpdateDTO voluntarioAdminUpdateDTO){
+        VoluntarioAdmin voluntarioAdminUpdated = service.update(voluntarioAdminUpdateDTO, id);
+        VoluntarioAdminRespondeDTO voluntarioAdminRespondeDTO = new VoluntarioAdminRespondeDTO(voluntarioAdminUpdated);
+        EntityModel<VoluntarioAdminRespondeDTO> entityModel = EntityModel.of(voluntarioAdminRespondeDTO);
+        entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).get(id)).withSelfRel());
+        entityModel.add(linkTo(methodOn(VoluntarioAdminController.class).index(Pageable.unpaged())).withRel("contents"));
+        return ResponseEntity.ok(entityModel);
     }
 
     @DeleteMapping("/{id}")

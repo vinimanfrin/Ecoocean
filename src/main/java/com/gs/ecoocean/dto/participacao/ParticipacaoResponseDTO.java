@@ -7,12 +7,13 @@ import com.gs.ecoocean.dto.voluntario.VoluntarioResponseDTO;
 import com.gs.ecoocean.model.Participacao;
 
 public record ParticipacaoResponseDTO(
+    Long id,
     VoluntarioResponseDTO voluntario,
     PartidaResponseDTO partida,
     BigDecimal pontuacao
 ) {
 
     public ParticipacaoResponseDTO(Participacao participacao){
-        this(new VoluntarioResponseDTO(participacao.getVoluntario()),new PartidaResponseDTO(participacao.getPartida()), participacao.getPontuacao());
+        this(participacao.getId(),new VoluntarioResponseDTO(participacao.getVoluntario()),new PartidaResponseDTO(participacao.getPartida()), participacao.getPontuacao());
     }
 }

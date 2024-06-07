@@ -16,10 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.net.URI;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/voluntarios")
@@ -29,12 +35,22 @@ public class VoluntarioController {
     @Autowired
     private VoluntarioService service;
 
+    @Autowired
+    private PagedResourcesAssembler<VoluntarioResponseDTO> pagedResourcesAssembler;
+
     @GetMapping
     @Operation(summary = "Lista todos os voluntários", description = "A listagem ocorre com paginação e tamanho padrão de 10 voluntários por requisição," +
             "endpoint requer autenticação")
-    public ResponseEntity<Page<VoluntarioResponseDTO>> index(@ParameterObject @PageableDefault(size = 10) Pageable pageable){
+    public ResponseEntity<PagedModel<EntityModel<VoluntarioResponseDTO>>> index(@ParameterObject @PageableDefault(size = 10) Pageable pageable){
         Page<VoluntarioResponseDTO> voluntarios = service.index(pageable).map(VoluntarioResponseDTO::new);
-        return ResponseEntity.ok(voluntarios);
+        PagedModel<EntityModel<VoluntarioResponseDTO>> pagedModel = pagedResourcesAssembler.toModel(voluntarios, voluntarioResponseDTO -> {
+            EntityModel<VoluntarioResponseDTO> entityModel = EntityModel.of(voluntarioResponseDTO);
+            entityModel.add(linkTo(methodOn(VoluntarioController.class).get(voluntarioResponseDTO.id())).withSelfRel());
+            entityModel.add(linkTo(methodOn(VoluntarioController.class).deleteById(voluntarioResponseDTO.id())).withRel("delete"));
+            entityModel.add(linkTo(methodOn(VoluntarioController.class).index(pageable)).withRel("contents"));
+            return entityModel;
+        });
+        return ResponseEntity.ok(pagedModel);
     }
 
     @GetMapping("/{id}")
@@ -44,9 +60,14 @@ public class VoluntarioController {
             @ApiResponse(responseCode = "200", description = "Voluntário detalhado com sucesso!"),
             @ApiResponse(responseCode = "401|403", description = "Não autorizado! Requer autenticação")
     })
-    public ResponseEntity<VoluntarioResponseDTO> get(@PathVariable Long id){
+    public ResponseEntity<EntityModel<VoluntarioResponseDTO>> get(@PathVariable Long id){
         Voluntario voluntario = service.get(id);
-        return ResponseEntity.ok(new VoluntarioResponseDTO(voluntario));
+        VoluntarioResponseDTO voluntarioResponseDTO = new VoluntarioResponseDTO(voluntario);
+        EntityModel<VoluntarioResponseDTO> entityModel = EntityModel.of(voluntarioResponseDTO);
+        entityModel.add(linkTo(methodOn(VoluntarioController.class).get(id)).withSelfRel());
+        entityModel.add(linkTo(methodOn(VoluntarioController.class).deleteById(id)).withRel("delete"));
+        entityModel.add(linkTo(methodOn(VoluntarioController.class).index(Pageable.unpaged())).withRel("contents"));
+        return ResponseEntity.ok(entityModel);
     }
 
     @PostMapping
@@ -57,10 +78,14 @@ public class VoluntarioController {
     })
     @Operation(summary = "Cadastra um novo Voluntário no sistema", description = "Endpoint recebe no corpo da requisição um objeto contendo os dados" +
             " necessários para realizar o cadastro de um novo voluntário")
-    public ResponseEntity<Void> create(@ParameterObject @RequestBody @Valid VoluntarioCreateDTO voluntarioDTO){
+    public ResponseEntity<EntityModel<VoluntarioResponseDTO>> create(@ParameterObject @RequestBody @Valid VoluntarioCreateDTO voluntarioDTO){
         Voluntario voluntarioSaved = service.create(voluntarioDTO);
-        URI uriLocation = Uri.createUriLocation(voluntarioSaved.getId());
-        return ResponseEntity.created(uriLocation).build();
+        VoluntarioResponseDTO voluntarioResponseDTO = new VoluntarioResponseDTO(voluntarioSaved);
+        EntityModel<VoluntarioResponseDTO> entityModel = EntityModel.of(voluntarioResponseDTO);
+        entityModel.add(linkTo(methodOn(VoluntarioController.class).get(voluntarioSaved.getId())).withSelfRel());
+        entityModel.add(linkTo(methodOn(VoluntarioController.class).index(Pageable.unpaged())).withRel("contents"));
+        URI uriLocation = linkTo(methodOn(VoluntarioController.class).get(voluntarioSaved.getId())).toUri();
+        return ResponseEntity.created(uriLocation).body(entityModel);
     }
 
     @PutMapping("/{id}")
@@ -71,9 +96,13 @@ public class VoluntarioController {
     })
     @Operation(summary = "Atualiza um Voluntário no sistema", description = "Endpoint recebe no corpo da requisição um objeto contendo os dados" +
             " necessários para atualizar um voluntário")
-    public ResponseEntity<VoluntarioResponseDTO> update(@PathVariable Long id, @ParameterObject @RequestBody @Valid VoluntarioUpdateDTO voluntarioUpdateDTO){
-        Voluntario voluntarioUpdated = service.update(voluntarioUpdateDTO,id);
-        return ResponseEntity.ok(new VoluntarioResponseDTO(voluntarioUpdated));
+    public ResponseEntity<EntityModel<VoluntarioResponseDTO>> update(@PathVariable Long id, @ParameterObject @RequestBody @Valid VoluntarioUpdateDTO voluntarioUpdateDTO){
+        Voluntario voluntarioUpdated = service.update(voluntarioUpdateDTO, id);
+        VoluntarioResponseDTO voluntarioResponseDTO = new VoluntarioResponseDTO(voluntarioUpdated);
+        EntityModel<VoluntarioResponseDTO> entityModel = EntityModel.of(voluntarioResponseDTO);
+        entityModel.add(linkTo(methodOn(VoluntarioController.class).get(id)).withSelfRel());
+        entityModel.add(linkTo(methodOn(VoluntarioController.class).index(Pageable.unpaged())).withRel("contents"));
+        return ResponseEntity.ok(entityModel);
     }
 
     @DeleteMapping("/{id}")
