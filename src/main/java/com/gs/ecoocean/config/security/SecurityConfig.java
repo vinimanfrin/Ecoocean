@@ -27,6 +27,9 @@ public class SecurityConfig {
     private static final String[] PUBLIC_MATCHERS_GET = {
         "/areas/**",
         "/partidas/**",
+        "/documentacao",
+        "/swagger-ui/**",
+        "v3/api-docs/**"
     };
 
 
