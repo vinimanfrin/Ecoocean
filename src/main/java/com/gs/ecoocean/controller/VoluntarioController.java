@@ -1,6 +1,7 @@
 package com.gs.ecoocean.controller;
 
 import com.gs.ecoocean.dto.voluntario.VoluntarioCreateDTO;
+import com.gs.ecoocean.dto.voluntario.VoluntarioRankingDTO;
 import com.gs.ecoocean.dto.voluntario.VoluntarioResponseDTO;
 import com.gs.ecoocean.dto.voluntario.VoluntarioUpdateDTO;
 import com.gs.ecoocean.model.Voluntario;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/voluntarios")
@@ -88,5 +90,10 @@ public class VoluntarioController {
     public ResponseEntity<Void> deleteById(@PathVariable Long id){
         service.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/ranking")
+    public List<VoluntarioRankingDTO> getVoluntarioRanking() {
+        return service.getVoluntarioRanking();
     }
 }

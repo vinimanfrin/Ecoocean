@@ -1,6 +1,7 @@
 package com.gs.ecoocean.service;
 
 import com.gs.ecoocean.dto.voluntario.VoluntarioCreateDTO;
+import com.gs.ecoocean.dto.voluntario.VoluntarioRankingDTO;
 import com.gs.ecoocean.dto.voluntario.VoluntarioUpdateDTO;
 import com.gs.ecoocean.exceptions.DataIntegrityException;
 import com.gs.ecoocean.exceptions.ObjectNotFoundException;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -73,5 +75,9 @@ public class VoluntarioService {
 
     public Voluntario findByAuthId(Long authId){
         return repository.findByAuthId(authId).orElseThrow(() -> new ObjectNotFoundException("Voluntário não encontrado com o auth de id:"+authId));
+    }
+
+    public List<VoluntarioRankingDTO> getVoluntarioRanking() {
+        return repository.findTop5VoluntarioRanking();
     }
 }

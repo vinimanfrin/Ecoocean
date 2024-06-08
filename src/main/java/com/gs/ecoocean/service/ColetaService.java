@@ -45,6 +45,8 @@ public class ColetaService {
         BigDecimal valorTipoLixo = new BigDecimal(TipoLixo.toEnum(coletaCreateDTO.tipoLixo()).getValor());
         BigDecimal pontuacao = valorTipoLixo.multiply(coletaCreateDTO.quantidade());
 
+        participacao.setPontuacao(participacao.getPontuacao().add(pontuacao));
+
         return repository.save(new Coleta(coletaCreateDTO,participacao,pontuacao));
     }
 
