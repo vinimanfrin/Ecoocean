@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  oracle-db:
+    image: gvenzl/oracle-xe
+    container_name: oracle-db
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: 220305
+    volumes:
+      - oracle-data:/u01/app/oracle
+
+  spring-app:
+    build: .
+    container_name: spring_app
+    ports:
+      - "8081:8080"
+    depends_on:
+      - oracle-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL
+      SPRING_DATASOURCE_USERNAME: rm552302
+      SPRING_DATASOURCE_PASSWORD: 220305
+    volumes:
+      - ./logs:/app/logs
+
+volumes:
+  oracle-data:
